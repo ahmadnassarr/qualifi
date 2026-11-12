@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_pill %}
+{% block title %}My applications{% endblock %}
+{% block content %}
+<div class="narrow stack">
+  <h1>My applications</h1>
+  {% if notes %}
+  <div class="notice" aria-label="Updates">
+    {% for n in notes %}<div class="notice-item {{ 'unread' if n.id in unread_ids }}">{{ n.message }} <span class="tiny muted">· {{ n.created_at|date }}</span></div>{% endfor %}
+  </div>
+  {% endif %}
+  {% if not apps %}
+    <div class="empty">No applications yet. <a href="{{ url_for('candidate.jobs') }}">Find a job</a> and pass its Qualifi Test to apply.</div>
+  {% endif %}
+  {% for a in apps %}
+  <a class="card card-link row-between {{ 'hot' if a.status == 'interview' }}" href="{{ url_for('candidate.job_detail', job_id=a.job_id) }}">
+    <div>
+      <div style="font-weight: 700; font-size: 17px">{{ a.title }}</div>
+      <div class="muted small">{{ a.company_name }} · Test {{ a.test_score }}/{{ a.test_total }} · Match {{ a.match_score }}%</div>
+      <div class="tiny muted">Applied {{ a.created_at|date }}</div>
+    </div>
+    {{ status_pill(a.status) }}
+  </a>
+  {% endfor %}
+</div>
+{% endblock %}

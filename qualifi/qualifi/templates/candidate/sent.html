@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% from "_macros.html" import check_icon %}
+{% block title %}Application sent{% endblock %}
+{% block content %}
+<div class="narrow stack center" style="padding-top: 8vh">
+  <div class="result-icon ok">{{ check_icon() }}</div>
+  <h1>Application sent!</h1>
+  <p class="muted">Your CV, test score and {{ app.match_score }}% match went to {{ app.company_name }} for {{ app.title }}.</p>
+  <a class="btn block" href="{{ url_for('candidate.applications') }}" style="margin-top: 12px">My applications</a>
+  <a class="btn secondary block" href="{{ url_for('candidate.jobs') }}">Browse more jobs</a>
+</div>
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% from "_macros.html" import upload_icon, file_tag, back_link %}
+{% macro file_list(items) %}
+  {% for d in items %}
+  <div class="file-row">
+    {{ file_tag(d.filename) }}
+    <span class="file-name">{{ d.filename }}</span>
+    <form method="post" action="{{ url_for('company.delete_document', job_id=job.id, doc_id=d.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button class="link-btn" type="submit" aria-label="Remove {{ d.filename }}"
+              data-confirm="Remove {{ d.filename }}{{ ' and the questions imported from it' if d.kind == 'questions' }}?">Remove</button>
+    </form>
+  </div>
+  {% endfor %}
+{% endmacro %}
+{% block title %}Add test files{% endblock %}
+{% block content %}
+<div class="narrow stack">
+  {{ back_link(url_for('company.dashboard'), 'Dashboard') }}
+  <div class="page-head">
+    <h1>Add test files</h1>
+    <p class="muted">{{ job.title }} · {{ LEVELS[job.level] }}{% if job.status == 'draft' %} · Step 2 of 3{% endif %}</p>
+  </div>
+
+  <div class="ai-msg">
+    <div class="ai-avatar" aria-hidden="true">Q</div>
+    <div class="ai-bubble">
+      To build the test for <b>{{ job.title }}</b>, upload your files. Every question comes
+      <b>only from your files</b>, and you review all of them before the job goes live.
+    </div>
+  </div>
+
+  <!-- Option 1: the company's own questions -->
+  <section class="card stack" aria-labelledby="own-h">
+    <div class="stack-sm">
+      <h2 id="own-h" style="font-size: 18px">Option 1: Upload your own questions</h2>
+      <p class="muted small">Already have test questions? Upload them and they’re used exactly as you wrote them.</p>
+    </div>
+    {{ file_list(banks) }}
+    <form method="post" enctype="multipart/form-data" class="stack">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="kind" value="questions">
+      <label class="dropzone" style="min-height: 120px">
+        <input type="file" name="files" accept=".pdf,.docx,.txt,.md" multiple>
+        {{ upload_icon() }}
+        <span style="font-weight: 600" data-file-label data-default="Upload question file">Upload question file</span>
+        <span class="muted small">PDF, Word or text</span>
+      </label>
+      <button class="btn block" type="submit" data-enable-on-file disabled>Import my questions</button>
+    </form>
+    <details>
+      <summary class="small accent" style="cursor: pointer; font-weight: 600; min-height: 40px; display: inline-flex; align-items: center">How to write the question file</summary>
+      <div class="stack-sm small" style="margin-top: 8px">
+        <p class="muted">Number each question, give four options A–D, then the answer:</p>
+<pre style="background: var(--field); border-radius: 10px; padding: 12px; margin: 0; white-space: pre-wrap; font-size: 14px; color: var(--text-2)">1. How many approvals does a pull request need?
+A) None
+B) One
+C) Two
+D) Three
+Answer: B
+Topic: Code reviews   (optional)</pre>
+        <p class="muted">You can also put a <b>*</b> after the correct option, or list all answers at the end under “Answer key” (for example: 1-B, 2-C, 3-A).</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- Option 2: build questions from the company's documents -->
+  <section class="card stack" aria-labelledby="files-h">
+    <div class="stack-sm">
+      <h2 id="files-h" style="font-size: 18px">Option 2: Build questions from your documents</h2>
+      <p class="muted small">Upload guides, standards, policies, procedures or training material. Qualifi turns the facts and rules in them into multiple-choice questions, and each one shows the file and page it came from.</p>
+    </div>
+    {{ file_list(materials) }}
+    <form method="post" enctype="multipart/form-data" class="stack">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="kind" value="material">
+      <label class="dropzone" style="min-height: 120px">
+        <input type="file" name="files" accept=".pdf,.docx,.txt,.md" multiple>
+        {{ upload_icon() }}
+        <span style="font-weight: 600" data-file-label data-default="{{ 'Upload more documents' if materials else 'Upload documents' }}">{{ 'Upload more documents' if materials else 'Upload documents' }}</span>
+        <span class="muted small">PDF, Word or text · up to 10 files</span>
+      </label>
+      <button class="btn secondary block" type="submit" data-enable-on-file disabled>Add these documents</button>
+    </form>
+    {% if materials %}
+    <form method="post" action="{{ url_for('company.generate', job_id=job.id) }}" data-loading="Reading your files and building questions…">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button class="btn block" type="submit"{% if question_count %} data-confirm="This rebuilds the questions taken from your documents. Questions you imported or added by hand stay. Continue?"{% endif %}>Build questions from these documents</button>
+    </form>
+    {% endif %}
+  </section>
+
+  {% if question_count %}
+    <a class="btn block" href="{{ url_for('company.review', job_id=job.id) }}">Review the test ({{ question_count }} question{{ 's' if question_count != 1 }})</a>
+  {% endif %}
+  <p class="hint center">You can use both options together, and add or edit questions by hand on the next screen.</p>
+</div>
+{% endblock %}

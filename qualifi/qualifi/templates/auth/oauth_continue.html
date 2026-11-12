@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Signing you in{% endblock %}
+{% block main_class %}auth-wrap{% endblock %}
+{% block content %}
+<meta http-equiv="refresh" content="0;url={{ target }}">
+<div class="auth-card center">
+  <div class="auth-logo">Quali<span>fi</span></div>
+  <p class="muted">Signing you in…</p>
+  <a class="btn block" href="{{ target }}">Continue</a>
+</div>
+{% endblock %}

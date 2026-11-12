@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% from "_macros.html" import upload_icon, file_tag %}
+{% block title %}Upload CV{% endblock %}
+{% block content %}
+<div class="narrow stack">
+  <div class="page-head">
+    <h1>Build your profile</h1>
+    <p class="muted">Upload your CV and Qualifi fills in your profile for you.</p>
+  </div>
+  <form method="post" enctype="multipart/form-data" class="stack" data-loading="Reading your CV and building your profile…">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label class="dropzone">
+      <input type="file" name="cv" accept=".pdf,.docx,.txt" required>
+      {{ upload_icon() }}
+      <span style="font-size: 17px; font-weight: 600" data-file-label data-default="Choose your CV">Choose your CV</span>
+      <span class="muted small">PDF or Word · up to 15 MB</span>
+    </label>
+    <button class="btn block" type="submit" data-enable-on-file disabled>Build my profile</button>
+  </form>
+  {% if profile and profile.cv_filename %}
+  <div class="file-row">
+    {{ file_tag(profile.cv_filename) }}
+    <span class="file-name">{{ profile.cv_filename }}</span>
+    <a class="btn ghost small" href="{{ url_for('candidate.download_cv', user_id=g.user.id) }}" target="_blank" rel="noopener">View</a>
+  </div>
+  <p class="hint">Uploading a new CV replaces this one and refreshes your profile.</p>
+  <a href="{{ url_for('candidate.profile') }}" class="btn secondary block">Keep my current profile</a>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% from "_macros.html" import back_link %}
+{% block title %}{{ job.title }}{% endblock %}
+{% block content %}
+<div class="narrow stack">
+  {{ back_link(url_for('candidate.jobs'), 'All jobs') }}
+  <div class="page-head">
+    <h1>{{ job.title }}</h1>
+    <p class="muted">{{ job.company_name }}{% if job.location %} · {{ job.location }}{% endif %} · {{ job.employment_type }}</p>
+  </div>
+  <div class="chips"><span class="chip">{{ job.field }}</span><span class="chip">{{ LEVELS[job.level] }}</span></div>
+  {% if job.description %}<p class="pre" style="color: var(--text-2)">{{ job.description }}</p>{% endif %}
+  {% if skills %}
+  <div class="stack-sm">
+    <span class="label">Requirements</span>
+    <div class="chips">{% for s in skills %}<span class="chip">{{ s }}</span>{% endfor %}</div>
+  </div>
+  {% endif %}
+
+  <div class="card stack-sm">
+    <h3>Qualifi Test</h3>
+    <p class="muted small">{{ job.questions_per_test }} questions from {{ job.company_name }}’s own files · pass mark {{ job.pass_mark }}/{{ job.questions_per_test }} · {{ job.time_limit_min }} minutes</p>
+    <p class="muted small">Once you start, the timer runs even if you leave the page. Leaving the test tab is shown to the company.</p>
+  </div>
+
+  {% if job.status == 'closed' and status.state != 'applied' %}
+    <div class="flash info">This job is closed and no longer taking applications.</div>
+  {% elif status.state == 'applied' %}
+    <div class="flash success">You applied on {{ status.application.created_at|date }} with a {{ status.application.match_score }}% match.</div>
+    <a class="btn block" href="{{ url_for('candidate.applications') }}">My applications</a>
+  {% elif status.state == 'passed' %}
+    <div class="flash success">You passed with {{ status.attempt.score }}/{{ status.attempt.total }}.</div>
+    <a class="btn block" href="{{ url_for('candidate.match', job_id=job.id) }}">See my match</a>
+  {% elif status.state == 'in_progress' %}
+    <a class="btn block" href="{{ url_for('candidate.take_test', attempt_id=status.attempt.id) }}">Continue my test</a>
+  {% elif status.state == 'failed_wait' %}
+    <div class="flash info">You scored {{ status.attempt.score }}/{{ status.attempt.total }} last time. You can retake the test from {{ status.retake_at|date }}.</div>
+    <a class="btn secondary block" href="{{ url_for('candidate.result', attempt_id=status.attempt.id) }}">See what to review</a>
+  {% elif not has_cv %}
+    <a class="btn block" href="{{ url_for('candidate.upload_cv') }}">Upload your CV to apply</a>
+  {% else %}
+    <form method="post" action="{{ url_for('candidate.start_test', job_id=job.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button class="btn block" type="submit">{{ 'Retake the Qualifi Test' if status.state == 'retake' else 'Take Qualifi Test to apply' }}</button>
+    </form>
+  {% endif %}
+</div>
+{% endblock %}

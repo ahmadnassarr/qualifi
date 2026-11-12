@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Find a job{% endblock %}
+{% block content %}
+<div class="stack">
+  <div class="page-head">
+    <h1>Find a job</h1>
+    <p class="muted">Every job has a short Qualifi Test taken from the company’s own files. Pass it to apply.</p>
+  </div>
+  {% if not has_cv %}
+    <div class="flash info">Upload your CV first so you’re ready to apply. <a href="{{ url_for('candidate.upload_cv') }}">Upload CV</a></div>
+  {% endif %}
+  <form class="filters" method="get" role="search">
+    <div class="field grow"><label for="q">Search</label><input id="q" name="q" type="search" value="{{ q }}" placeholder="Title, company or skill"></div>
+    <div class="field"><label for="field">Field</label>
+      <select id="field" name="field"><option value="">All fields</option>{% for f in FIELDS %}<option {{ 'selected' if f == field }}>{{ f }}</option>{% endfor %}</select></div>
+    <div class="field"><label for="level">Level</label>
+      <select id="level" name="level"><option value="">All levels</option>{% for k, v in LEVELS.items() %}<option value="{{ k }}" {{ 'selected' if k == level }}>{{ v }}</option>{% endfor %}</select></div>
+    <button class="btn" type="submit">Search</button>
+  </form>
+
+  {% if not jobs %}
+    {% if q or field or level %}
+    <div class="empty">No jobs match your search yet. Try another field or level.</div>
+    {% else %}
+    <div class="empty">No jobs are open right now. New jobs appear here as soon as companies publish them, so check back soon.</div>
+    {% endif %}
+  {% endif %}
+  <div class="grid-2" style="grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr))">
+  {% for job in jobs %}
+    {% set st = statuses[job.id] %}
+    <a class="card card-link job-card {{ 'hot' if st.state in ('passed', 'in_progress') }}" href="{{ url_for('candidate.job_detail', job_id=job.id) }}">
+      <span class="job-title">{{ job.title }}</span>
+      <span class="muted small">{{ job.company_name }}{% if job.location %} · {{ job.location }}{% endif %} · {{ job.employment_type }}</span>
+      <span class="chips" style="margin-top: 4px"><span class="chip">{{ job.field }}</span><span class="chip">{{ LEVELS[job.level] }}</span></span>
+      <span class="small" style="margin-top: 4px; font-weight: 600">
+        {% if st.state == 'applied' %}<span class="accent">Applied · {{ st.application.match_score }}% match</span>
+        {% elif st.state == 'passed' %}<span class="accent">Qualified · see your match and apply</span>
+        {% elif st.state == 'in_progress' %}<span class="accent">Test in progress · continue</span>
+        {% elif st.state == 'failed_wait' %}<span style="color: var(--amber-text)">Retake from {{ st.retake_at|date }}</span>
+        {% else %}<span class="muted">Qualifi Test · {{ job.questions_per_test }} questions · pass {{ job.pass_mark }}/{{ job.questions_per_test }}</span>{% endif %}
+      </span>
+    </a>
+  {% endfor %}
+  </div>
+</div>
+{% endblock %}

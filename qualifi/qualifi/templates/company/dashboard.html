@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="stack">
+  <div class="row-between">
+    <h1>Welcome, {{ company.company_name }}</h1>
+    <a class="btn" href="{{ url_for('company.new_job') }}">Post a job</a>
+  </div>
+  <div class="grid-3">
+    <div class="card"><div class="stat-num">{{ stats.open }}</div><div class="muted small">Open jobs</div></div>
+    <div class="card"><div class="stat-num">{{ stats.applicants }}</div><div class="muted small">Qualified applicants</div></div>
+    <div class="card"><div class="stat-num">{{ stats.tests }}</div><div class="muted small">Tests taken</div></div>
+  </div>
+
+  {% if notes %}
+  <div class="notice" aria-label="Updates">
+    <span class="label">Latest updates</span>
+    {% for n in notes %}<div class="notice-item {{ 'unread' if not n.is_read }}">{% if n.link %}<a href="{{ n.link }}">{{ n.message }}</a>{% else %}{{ n.message }}{% endif %} <span class="tiny muted">· {{ n.created_at|date }}</span></div>{% endfor %}
+  </div>
+  {% endif %}
+
+  <h2 style="margin-top: 8px">Your jobs</h2>
+  {% if not jobs %}
+    <div class="empty">No jobs yet. <a href="{{ url_for('company.new_job') }}">Post your first job</a>: you’ll upload your test files and Qualifi builds the test from them.</div>
+  {% endif %}
+  {% for job in jobs %}
+  <div class="card stack-sm">
+    <div class="row-between">
+      <div>
+        <div style="font-weight: 700; font-size: 18px">{{ job.title }}</div>
+        <div class="muted small">{{ job.field }} · {{ LEVELS[job.level] }} · {{ job.question_count }} question{{ 's' if job.question_count != 1 }} in bank · {{ job.tests_taken }} test{{ 's' if job.tests_taken != 1 }} taken</div>
+      </div>
+      <span class="pill {{ job.status }}">{{ {'draft': 'Draft', 'published': 'Live', 'closed': 'Closed'}[job.status] }}</span>
+    </div>
+    <div class="row">
+      {% if job.status == 'draft' %}
+        <a class="btn small" href="{{ url_for('company.documents', job_id=job.id) }}">Continue setup</a>
+      {% else %}
+        <a class="btn small" href="{{ url_for('company.applicants', job_id=job.id) }}">Applicants ({{ job.applicants }})</a>
+      {% endif %}
+      <a class="btn secondary small" href="{{ url_for('company.review', job_id=job.id) }}">Test</a>
+      <a class="btn secondary small" href="{{ url_for('company.documents', job_id=job.id) }}">Files</a>
+      <a class="btn secondary small" href="{{ url_for('company.edit_job', job_id=job.id) }}">Edit</a>
+      {% if job.status != 'draft' %}
+      <form method="post" action="{{ url_for('company.close_job', job_id=job.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button class="btn ghost small" type="submit">{{ 'Reopen' if job.status == 'closed' else 'Close job' }}</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

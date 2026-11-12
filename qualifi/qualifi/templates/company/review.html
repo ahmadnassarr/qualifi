@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% from "_macros.html" import back_link %}
+{% macro question_fields(q=None, prefix='') %}
+  <div class="field"><label for="{{ prefix }}text">Question</label>
+    <textarea id="{{ prefix }}text" name="text" rows="3" required>{{ q.text if q else '' }}</textarea></div>
+  {% for i in range(4) %}
+  <div class="radio-row">
+    <input type="radio" id="{{ prefix }}ans{{ i }}" name="answer" value="{{ i }}" {{ 'checked' if q and q.answer_index == i }} required aria-label="Option {{ 'ABCD'[i] }} is correct">
+    <input type="text" name="option_{{ i }}" value="{{ q.options[i] if q and q.options|length > i else '' }}" placeholder="Option {{ 'ABCD'[i] }}" required aria-label="Option {{ 'ABCD'[i] }}">
+  </div>
+  {% endfor %}
+  <span class="hint">Select the circle next to the correct answer.</span>
+  <div class="field"><label for="{{ prefix }}topic">Topic (shown to candidates who need to review it)</label>
+    <input id="{{ prefix }}topic" name="topic" type="text" value="{{ q.topic if q else '' }}" placeholder="e.g. Code reviews"></div>
+{% endmacro %}
+
+{% block title %}Review test{% endblock %}
+{% block content %}
+<div class="narrow stack">
+  {{ back_link(url_for('company.documents', job_id=job.id), 'Files') }}
+  <div class="page-head">
+    <h1>Review test</h1>
+    <p class="muted">{{ job.title }} · built from your {{ docs|length }} file{{ 's' if docs|length != 1 }} · {{ questions|length }} questions · {{ job.questions_per_test }} per candidate · pass mark {{ job.pass_mark }}/{{ job.questions_per_test }}</p>
+  </div>
+
+  <details class="card">
+    <summary style="cursor: pointer; font-weight: 600">Test settings</summary>
+    <form method="post" action="{{ url_for('company.test_settings', job_id=job.id) }}" class="stack" style="margin-top: 14px">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <div class="grid-3">
+        <div class="field"><label for="qpt">Questions per candidate</label><input id="qpt" name="questions_per_test" type="number" min="3" max="50" value="{{ job.questions_per_test }}"></div>
+        <div class="field"><label for="pm">Pass mark</label><input id="pm" name="pass_mark" type="number" min="1" max="50" value="{{ job.pass_mark }}"></div>
+        <div class="field"><label for="tl">Time limit (minutes)</label><input id="tl" name="time_limit_min" type="number" min="3" max="120" value="{{ job.time_limit_min }}"></div>
+      </div>
+      <button class="btn secondary" type="submit">Save settings</button>
+    </form>
+  </details>
+
+  {% if not questions %}
+    <div class="empty">No questions yet. <a href="{{ url_for('company.documents', job_id=job.id) }}">Upload files and generate the test</a>, or add questions below.</div>
+  {% endif %}
+
+  {% for q in questions %}
+  <div class="card stack-sm" id="q{{ q.id }}">
+    <div class="row-between">
+      <span class="label">Question {{ loop.index }}{% if q.topic %} · {{ q.topic }}{% endif %}</span>
+      <span class="tiny muted">{{ {'imported': 'From your question file', 'local': 'Built from your documents', 'manual': 'Added by you'}.get(q.origin, '') }}</span>
+    </div>
+    <p class="pre" style="font-weight: 600">{{ q.text }}</p>
+    <ul class="opt-list">
+      {% for o in q.options %}<li class="{{ 'correct' if loop.index0 == q.answer_index }}">{{ 'ABCD'[loop.index0] }}. {{ o }}{% if loop.index0 == q.answer_index %} · correct{% endif %}</li>{% endfor %}
+    </ul>
+    {% if q.origin != 'manual' %}<span class="tiny accent">Source: {{ q.source_doc }}{% if q.source_page %} · p. {{ q.source_page }}{% endif %}</span>{% endif %}
+    <div class="row-between">
+      <details class="q-edit" style="flex: 1">
+        <summary>Edit</summary>
+        <form method="post" action="{{ url_for('company.edit_question', job_id=job.id, qid=q.id) }}" class="stack" style="margin-top: 10px">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          {{ question_fields(q, 'e' ~ q.id ~ '_') }}
+          <button class="btn small" type="submit">Save question</button>
+        </form>
+      </details>
+      <form method="post" action="{{ url_for('company.delete_question', job_id=job.id, qid=q.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button class="link-btn" type="submit" style="color: var(--red-text)" data-confirm="Delete this question?">Delete</button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+
+  <details class="card" id="add">
+    <summary style="cursor: pointer; font-weight: 600">+ Add a question by hand</summary>
+    <form method="post" action="{{ url_for('company.add_question', job_id=job.id) }}" class="stack" style="margin-top: 14px">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      {{ question_fields(None, 'new_') }}
+      <button class="btn secondary" type="submit">Add question</button>
+    </form>
+  </details>
+
+  {% if job.status == 'draft' %}
+    <form method="post" action="{{ url_for('company.publish', job_id=job.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button class="btn block" type="submit">Approve &amp; publish</button>
+    </form>
+  {% else %}
+    <div class="flash info">This job is {{ 'live' if job.status == 'published' else 'closed' }}. Changes apply to tests started from now on.</div>
+    <a class="btn block" href="{{ url_for('company.applicants', job_id=job.id) }}">Applicants</a>
+  {% endif %}
+</div>
+{% endblock %}

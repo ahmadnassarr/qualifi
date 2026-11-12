@@ -1,0 +1,20 @@
+# ---- Never upload: private data and secrets ----
+# database, uploaded CVs/files, logs and the session secret
+instance/
+# passwords and API keys (only .env.example, which has no secrets, is uploaded)
+.env
+# Apple sign-in private key
+*.p8
+*.sqlite
+*.sqlite-*
+*.log
+
+# ---- Generated or personal files ----
+__pycache__/
+*.pyc
+.venv/
+venv/
+# contains a path specific to this computer
+.vscode/
+.DS_Store
+Thumbs.db

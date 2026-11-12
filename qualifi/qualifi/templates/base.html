@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#05080F">
+  <title>{% block title %}Qualifi{% endblock %} · Qualifi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+</head>
+<body>
+{% if g.user %}
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="logo" href="{{ url_for('home') }}">Quali<span>fi</span></a>
+    {% set ep = request.endpoint or '' %}
+    <nav class="nav" aria-label="Main">
+      {% if g.user.role == 'candidate' %}
+        <a href="{{ url_for('candidate.jobs') }}" class="{{ 'active' if ep in ('candidate.jobs', 'candidate.job_detail', 'candidate.match') }}">Find a job</a>
+        <a href="{{ url_for('candidate.applications') }}" class="{{ 'active' if ep == 'candidate.applications' }}">My applications{% if unread_count %}<span class="badge-dot" aria-label="{{ unread_count }} new">{{ unread_count }}</span>{% endif %}</a>
+        <a href="{{ url_for('candidate.profile') }}" class="{{ 'active' if ep in ('candidate.profile', 'candidate.upload_cv') }}">Profile</a>
+      {% else %}
+        <a href="{{ url_for('company.dashboard') }}" class="{{ 'active' if ep == 'company.dashboard' }}">Dashboard{% if unread_count %}<span class="badge-dot" aria-label="{{ unread_count }} new">{{ unread_count }}</span>{% endif %}</a>
+        <a href="{{ url_for('company.new_job') }}" class="{{ 'active' if ep == 'company.new_job' }}">Post a job</a>
+      {% endif %}
+      <a href="{{ url_for('account.settings') }}" class="{{ 'active' if ep == 'account.settings' }}">Account</a>
+    </nav>
+    <span class="spacer"></span>
+    <form method="post" action="{{ url_for('auth.logout') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button class="logout" type="submit">Log out</button>
+    </form>
+  </div>
+</header>
+{% endif %}
+
+<main class="{% block main_class %}page{% endblock %}">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="stack-sm" style="margin-bottom: 16px" role="status">
+        {% for cat, msg in messages %}<div class="flash {{ cat if cat in ('success', 'error', 'info') else 'info' }}">{{ msg }}</div>{% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</main>
+
+<div class="loading-overlay" id="loading" role="status" aria-live="polite">
+  <div class="spinner"></div>
+  <p id="loading-text" style="font-size: 17px; color: var(--text-2)">Working…</p>
+</div>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

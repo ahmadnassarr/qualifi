@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_pill, back_link %}
+{% block title %}Applicants{% endblock %}
+{% block content %}
+<div class="narrow stack">
+  {{ back_link(url_for('company.dashboard'), 'Dashboard') }}
+  {% if just_published %}
+    <div class="flash success">Job is live. Only candidates who pass your test can apply.</div>
+  {% endif %}
+  <div class="page-head">
+    <h1>{{ job.title }}</h1>
+    <p class="muted">{{ apps|length }} qualified applicant{{ 's' if apps|length != 1 }} · ranked by Qualifi Match · {{ tests.taken }} tests taken, {{ tests.passed }} passed</p>
+  </div>
+  {% if not apps %}
+    <div class="empty">No applicants yet. Candidates who pass your test will appear here, ranked by match.</div>
+  {% endif %}
+  {% for a in apps %}
+  <a class="card card-link list-row {{ 'hot' if loop.first and a.status != 'rejected' }}" href="{{ url_for('company.applicant', app_id=a.id) }}" style="{{ 'opacity: 0.6' if a.status == 'rejected' }}">
+    <span class="avatar">{{ a.name|initials }}</span>
+    <span style="flex: 1; min-width: 0" class="stack-sm">
+      <span style="font-weight: 700; font-size: 17px">{{ loop.index }}. {{ a.name }}</span>
+      <span class="muted small">{{ a.headline or 'Candidate' }} · Test {{ a.test_score }}/{{ a.test_total }}{% if a.tab_switches %} · left test tab {{ a.tab_switches }}×{% endif %}</span>
+      <span>{{ status_pill(a.status) }}</span>
+    </span>
+    <span class="rank">{{ a.match_score }}%</span>
+  </a>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_pill, back_link %}
+{% block title %}{{ a.name }}{% endblock %}
+{% block content %}
+<div class="narrow stack">
+  {{ back_link(url_for('company.applicants', job_id=a.job_id), 'Applicants') }}
+  <div class="list-row">
+    <div class="avatar lg">{{ a.name|initials }}</div>
+    <div style="flex: 1">
+      <h1 style="font-size: 22px">{{ a.name }}</h1>
+      <p class="muted small">{{ a.headline or 'Candidate' }}{% if a.location %} · {{ a.location }}{% endif %}</p>
+    </div>
+    {{ status_pill(a.status) }}
+  </div>
+  <div class="grid-2">
+    <div class="card"><div class="stat-num accent">{{ a.match_score }}%</div><div class="muted small">Qualifi Match</div></div>
+    <div class="card"><div class="stat-num">{{ a.test_score }}/{{ a.test_total }}</div><div class="muted small">Qualifi Test</div></div>
+  </div>
+  {% if breakdown %}
+  <p class="small muted">Skills covered {{ breakdown.skills }}% · CV fits the role {{ breakdown.similarity }}% · experience fit {{ breakdown.level }}%</p>
+  {% endif %}
+  {% if a.tab_switches %}<div class="flash info">Left the test tab {{ a.tab_switches }} time{{ 's' if a.tab_switches != 1 }} during the test.</div>{% endif %}
+  {% if matched %}<div class="stack-sm"><span class="label">Required skills they have</span><div class="chips">{% for s in matched %}<span class="chip">{{ s }}</span>{% endfor %}</div></div>{% endif %}
+  {% if missing %}<div class="stack-sm"><span class="label">Required skills missing</span><div class="chips">{% for s in missing %}<span class="chip missing">{{ s }}</span>{% endfor %}</div></div>{% endif %}
+  {% if skills %}<div class="stack-sm"><span class="label">All skills</span><p style="color: var(--text-2)">{{ skills|join(', ') }}</p></div>{% endif %}
+  {% if a.experience %}<div class="stack-sm"><span class="label">Experience · {{ a.experience_years|round(1) }} years</span><p class="pre" style="color: var(--text-2)">{{ a.experience }}</p></div>{% endif %}
+  {% if a.education %}<div class="stack-sm"><span class="label">Education</span><p class="pre" style="color: var(--text-2)">{{ a.education }}</p></div>{% endif %}
+  <div class="stack-sm"><span class="label">Contact</span><p style="color: var(--text-2)">{{ a.email }}{% if a.phone %} · {{ a.phone }}{% endif %}</p></div>
+  <a class="btn ghost block" href="{{ url_for('candidate.download_cv', user_id=a.candidate_id) }}" target="_blank" rel="noopener">View full CV</a>
+
+  <form method="post" action="{{ url_for('company.set_status', app_id=a.id) }}" class="row" style="gap: 10px">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    {% if a.status == 'under_review' %}
+      <button class="btn secondary" style="flex: 1" type="submit" name="action" value="reject" data-confirm="Mark {{ a.name }} as not selected? They will be notified.">Reject</button>
+      <button class="btn" style="flex: 2" type="submit" name="action" value="invite">Invite to interview</button>
+    {% else %}
+      <p class="muted small" style="flex: 1">{{ 'Invited to interview.' if a.status == 'interview' else 'Marked as not selected.' }}</p>
+      <button class="btn secondary" type="submit" name="action" value="review">Move back to review</button>
+    {% endif %}
+  </form>
+</div>
+{% endblock %}

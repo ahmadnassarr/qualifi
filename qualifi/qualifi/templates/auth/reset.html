@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Choose a new password{% endblock %}
+{% block main_class %}auth-wrap{% endblock %}
+{% block content %}
+<form class="auth-card" method="post" action="{{ url_for('account.reset_password', token=token) }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <div class="auth-logo">Quali<span>fi</span></div>
+  <h1 style="font-size: 22px" class="center">Choose a new password</h1>
+  <p class="muted center" style="margin-top: -8px">For {{ email }}</p>
+  <input type="email" name="username" value="{{ email }}" autocomplete="username" hidden>
+  <div class="field">
+    <label for="password">New password</label>
+    <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required autofocus>
+    <span class="hint">At least 8 characters.</span>
+  </div>
+  <div class="field">
+    <label for="confirm">Type it again</label>
+    <input id="confirm" name="confirm" type="password" autocomplete="new-password" minlength="8" required>
+  </div>
+  <button class="btn block" type="submit">Save new password</button>
+  <p class="center muted small">You’ll be logged out on every other device.</p>
+</form>
+{% endblock %}

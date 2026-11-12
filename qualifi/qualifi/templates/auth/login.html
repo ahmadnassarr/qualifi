@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% from "_macros.html" import social_buttons %}
+{% block title %}Log in{% endblock %}
+{% block main_class %}auth-wrap{% endblock %}
+{% block content %}
+<form class="auth-card" method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <div class="auth-logo">Quali<span>fi</span></div>
+  <p class="muted center" style="margin-top: -8px">Get qualified before you apply.</p>
+  {{ social_buttons(oauth_providers) }}
+  <div class="field">
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email" value="{{ email }}" autocomplete="email" required autofocus>
+  </div>
+  <div class="field">
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" autocomplete="current-password" required>
+    <a class="small" href="{{ url_for('account.forgot_password') }}" style="align-self: flex-end">Forgot password?</a>
+  </div>
+  <button class="btn block" type="submit">Log in</button>
+  <p class="center muted small">New here?
+    <a href="{{ url_for('auth.register', role='candidate') }}">Join as a candidate</a> or
+    <a href="{{ url_for('auth.register', role='company') }}">as a company</a></p>
+</form>
+{% endblock %}

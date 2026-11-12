@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% from "_macros.html" import provider_icon %}
+{% block title %}Finish signing up{% endblock %}
+{% block main_class %}auth-wrap{% endblock %}
+{% block content %}
+<form class="auth-card" method="post" action="{{ url_for('oauth.finish', role=role) }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <div class="auth-logo">Quali<span>fi</span></div>
+  <h1 style="font-size: 22px" class="center">One last step</h1>
+  <p class="muted center" style="margin-top: -8px; display: flex; gap: 8px; justify-content: center; align-items: center; flex-wrap: wrap">
+    {{ provider_icon(pending.provider) }} Signed in with {{ label }} as <strong>{{ pending.email }}</strong></p>
+
+  <div class="role-switch" role="tablist" aria-label="Account type">
+    <a href="{{ url_for('oauth.finish', role='candidate') }}" class="{{ 'on' if role == 'candidate' }}" role="tab" aria-selected="{{ 'true' if role == 'candidate' else 'false' }}">I’m a candidate</a>
+    <a href="{{ url_for('oauth.finish', role='company') }}" class="{{ 'on' if role == 'company' }}" role="tab" aria-selected="{{ 'true' if role == 'company' else 'false' }}">I’m hiring</a>
+  </div>
+
+  <div class="field">
+    <label for="name">Your full name</label>
+    <input id="name" name="name" type="text" value="{{ form.name }}" autocomplete="name" required autofocus>
+  </div>
+  {% if role == 'company' %}
+  <div class="field">
+    <label for="company_name">Company name</label>
+    <input id="company_name" name="company_name" type="text" value="{{ form.company_name }}" autocomplete="organization" required>
+  </div>
+  <button class="btn block" type="submit">Create company account</button>
+  <p class="center muted small">Next you’ll post your first job and upload your test files.</p>
+  {% else %}
+  <button class="btn block" type="submit">Create account</button>
+  <p class="center muted small">Next you’ll upload your CV. Qualifi fills in your profile from it.</p>
+  {% endif %}
+  <p class="center muted small"><a href="{{ url_for('auth.login') }}">Cancel</a></p>
+</form>
+{% endblock %}

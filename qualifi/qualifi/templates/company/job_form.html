@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% from "_macros.html" import back_link %}
+{% block title %}{{ 'Edit job' if job else 'Post a job' }}{% endblock %}
+{% block content %}
+<form method="post" class="narrow stack">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  {{ back_link(url_for('company.dashboard'), 'Dashboard') }}
+  <div class="page-head">
+    <h1>{{ 'Edit job' if job else 'Post a job' }}</h1>
+    {% if not job %}<p class="muted">Step 1 of 3 · Next you’ll upload your test files: your own questions, or documents to build questions from.</p>{% endif %}
+  </div>
+  <div class="field"><label for="title">Job title</label><input id="title" name="title" type="text" value="{{ values.title }}" placeholder="e.g. Junior Web Developer" required></div>
+  <div class="grid-2">
+    <div class="field"><label for="field">Field</label>
+      <select id="field" name="field">{% for f in FIELDS %}<option {{ 'selected' if f == values.field }}>{{ f }}</option>{% endfor %}</select></div>
+    <div class="field"><label for="level">Level</label>
+      <select id="level" name="level">{% for k, v in LEVELS.items() %}<option value="{{ k }}" {{ 'selected' if k == values.level }}>{{ v }}</option>{% endfor %}</select></div>
+  </div>
+  <div class="grid-2">
+    <div class="field"><label for="location">Location</label><input id="location" name="location" type="text" value="{{ values.location }}" placeholder="e.g. Beirut"></div>
+    <div class="field"><label for="employment_type">Job type</label>
+      <select id="employment_type" name="employment_type">{% for t in EMPLOYMENT_TYPES %}<option {{ 'selected' if t == values.employment_type }}>{{ t }}</option>{% endfor %}</select></div>
+  </div>
+  <div class="field"><label for="skills">Required skills</label>
+    <input id="skills" name="skills" type="text" value="{{ values.skills }}" placeholder="React, SQL, Git" required>
+    <span class="hint">Separate with commas. Used for each candidate’s Qualifi Match.</span></div>
+  <div class="field"><label for="description">Description</label>
+    <textarea id="description" name="description" rows="6" placeholder="What the person will do, the team, and what you offer.">{{ values.description }}</textarea></div>
+  <button class="btn block" type="submit">{{ 'Save changes' if job else 'Next: add files' }}</button>
+</form>
+{% endblock %}

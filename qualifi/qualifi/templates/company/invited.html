@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% from "_macros.html" import check_icon %}
+{% block title %}Invite sent{% endblock %}
+{% block content %}
+<div class="narrow stack center" style="padding-top: 8vh">
+  <div class="result-icon ok">{{ check_icon() }}</div>
+  <h1>Interview invite sent</h1>
+  <p class="muted">{{ a.name.split()[0] }} is notified and sees “Interview” in their applications. Reach them at <a href="mailto:{{ a.email }}">{{ a.email }}</a> to set a time.</p>
+  <a class="btn block" href="{{ url_for('company.applicants', job_id=a.job_id) }}" style="margin-top: 12px">Back to applicants</a>
+</div>
+{% endblock %}

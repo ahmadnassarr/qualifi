@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% from "_macros.html" import provider_icon %}
+{% block title %}Account{% endblock %}
+{% block content %}
+<div class="narrow stack">
+  <div class="page-head">
+    <h1>Account</h1>
+    <p class="muted">{{ g.user.name }} · {{ g.user.email }} · {{ 'Company' if g.user.role == 'company' else 'Candidate' }} account</p>
+  </div>
+
+  {% if methods %}
+  <div class="card stack-sm">
+    <h2 style="font-size: 19px">Sign-in methods</h2>
+    <div>
+      <div class="method-row">
+        <span class="method-name">Email and password</span>
+        <span class="muted small">{{ 'On' if has_password else 'Not set. Add a password below' }}</span>
+      </div>
+      {% for m in methods %}
+      <div class="method-row">
+        <span class="method-name">{{ provider_icon(m.key) }}{{ m.label }}
+          {% if m.linked %}<span class="muted small" style="font-weight: 400">· {{ m.linked.email or 'connected' }}</span>{% endif %}</span>
+        {% if m.linked %}
+          {% if can_disconnect %}
+          <form method="post" action="{{ url_for('oauth.disconnect', provider=m.key) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button class="btn ghost small" type="submit" data-confirm="Disconnect {{ m.label }}? You won’t be able to log in with it until you connect it again.">Disconnect</button>
+          </form>
+          {% else %}
+          <span class="muted small">Connected · set a password to disconnect</span>
+          {% endif %}
+        {% elif m.enabled %}
+          <form method="post" action="{{ url_for('oauth.connect', provider=m.key) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button class="btn secondary small" type="submit">Connect</button>
+          </form>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <form method="post" action="{{ url_for('account.change_password') }}" class="card stack">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <input type="email" name="username" value="{{ g.user.email }}" autocomplete="username" hidden>
+    <h2 style="font-size: 19px">{{ 'Change password' if has_password else 'Set a password' }}</h2>
+    {% if has_password %}
+    <div class="field">
+      <label for="current">Current password</label>
+      <input id="current" name="current" type="password" autocomplete="current-password" required>
+    </div>
+    {% else %}
+    <p class="muted">You sign in with {{ methods|selectattr('linked')|map(attribute='label')|join(' or ') or 'a linked account' }}.
+      Add a password to also log in with your email.</p>
+    {% endif %}
+    <div class="grid-2">
+      <div class="field">
+        <label for="password">New password</label>
+        <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required>
+        <span class="hint">At least 8 characters.</span>
+      </div>
+      <div class="field">
+        <label for="confirm">Type it again</label>
+        <input id="confirm" name="confirm" type="password" autocomplete="new-password" minlength="8" required>
+      </div>
+    </div>
+    <button class="btn" type="submit">{{ 'Change password' if has_password else 'Set password' }}</button>
+  </form>
+
+  <form method="post" action="{{ url_for('account.delete_account') }}" class="card stack" style="border-color: #7A2A30">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <h2 style="font-size: 19px">Delete account</h2>
+    {% if g.user.role == 'company' %}
+      <p class="muted">This permanently deletes your company account, all your jobs, tests, uploaded files and every
+        application you received. Candidates who applied are told their application was removed. This can’t be undone.</p>
+    {% else %}
+      <p class="muted">This permanently deletes your account, your profile, your CV, your test results and all your
+        applications. Companies you applied to will no longer see them. This can’t be undone.</p>
+    {% endif %}
+    {% if has_password %}
+    <div class="field">
+      <label for="delete-password">Enter your password to confirm</label>
+      <input id="delete-password" name="password" type="password" autocomplete="current-password" required>
+    </div>
+    {% else %}
+    <div class="field">
+      <label for="delete-confirm">Type DELETE to confirm</label>
+      <input id="delete-confirm" name="confirm_text" type="text" autocomplete="off" required pattern="[Dd][Ee][Ll][Ee][Tt][Ee]">
+    </div>
+    {% endif %}
+    <button class="btn danger" type="submit" data-confirm="Delete your Qualifi account and all its data for good?">Delete my account</button>
+  </form>
+</div>
+{% endblock %}

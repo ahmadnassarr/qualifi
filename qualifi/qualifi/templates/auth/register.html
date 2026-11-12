@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% from "_macros.html" import social_buttons %}
+{% block title %}Create an account{% endblock %}
+{% block main_class %}auth-wrap{% endblock %}
+{% block content %}
+<form class="auth-card" method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <input type="hidden" name="role" value="{{ role }}">
+  <div class="auth-logo">Quali<span>fi</span></div>
+  <div class="role-switch" role="tablist" aria-label="Account type">
+    <a href="{{ url_for('auth.register', role='candidate') }}" class="{{ 'on' if role == 'candidate' }}" role="tab" aria-selected="{{ 'true' if role == 'candidate' else 'false' }}">I’m a candidate</a>
+    <a href="{{ url_for('auth.register', role='company') }}" class="{{ 'on' if role == 'company' }}" role="tab" aria-selected="{{ 'true' if role == 'company' else 'false' }}">I’m hiring</a>
+  </div>
+  {{ social_buttons(oauth_providers, role) }}
+  <div class="field">
+    <label for="name">Your full name</label>
+    <input id="name" name="name" type="text" value="{{ form.name }}" autocomplete="name" required>
+  </div>
+  {% if role == 'company' %}
+  <div class="field">
+    <label for="company_name">Company name</label>
+    <input id="company_name" name="company_name" type="text" value="{{ form.company_name }}" autocomplete="organization" required>
+  </div>
+  {% endif %}
+  <div class="field">
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email" value="{{ form.email }}" autocomplete="email" required>
+  </div>
+  <div class="field">
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required>
+    <span class="hint">At least 8 characters.</span>
+  </div>
+  <button class="btn block" type="submit">Create account</button>
+  <p class="center muted small">Already have an account? <a href="{{ url_for('auth.login') }}">Log in</a></p>
+</form>
+{% endblock %}

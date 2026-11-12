@@ -1,0 +1,9 @@
+Flask>=3.0
+pypdf>=4.0
+python-docx>=1.1
+# Sign in with Apple signs a short-lived secret with your Apple key (Google and GitHub need nothing extra)
+PyJWT>=2.8
+cryptography>=42
+# Production web servers: waitress works everywhere (python serve.py); gunicorn is for Linux hosts (gunicorn wsgi:app)
+waitress>=3.0
+gunicorn>=22.0; sys_platform != "win32"

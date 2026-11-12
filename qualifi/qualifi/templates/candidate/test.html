@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Qualifi Test{% endblock %}
+{% block content %}
+<form id="test-form" method="post" action="{{ url_for('candidate.answer', attempt_id=attempt.id) }}" class="narrow stack"
+      data-event-url="{{ url_for('candidate.test_event', attempt_id=attempt.id) }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <input type="hidden" name="index" value="{{ index }}">
+  <p class="muted small">{{ job.title }} · {{ job.company_name }}</p>
+  <div class="row-between">
+    <span style="font-weight: 700">Question {{ index + 1 }} of {{ total }}</span>
+    <span class="timer" id="timer" data-seconds="{{ seconds_left }}" data-result-url="{{ url_for('candidate.result', attempt_id=attempt.id) }}">{{ seconds_left // 60 }}:{{ '%02d' % (seconds_left % 60) }} left</span>
+  </div>
+  <div class="progress" aria-hidden="true"><div style="width: {{ ((index + 1) / total * 100)|round(0) }}%"></div></div>
+  <fieldset style="border: none; padding: 0; margin: 0" class="stack">
+    <legend class="question-text" style="margin-bottom: 16px">{{ question.text }}</legend>
+    {% for opt in question.options %}
+    <label class="option">
+      <input type="radio" name="choice" value="{{ loop.index0 }}" required>
+      <span class="letter">{{ 'ABCD'[loop.index0] }}</span>
+      <span>{{ opt }}</span>
+    </label>
+    {% endfor %}
+  </fieldset>
+  <p class="tiny muted center">Questions come from {{ job.company_name }}’s own files.</p>
+  <button class="btn block" id="next-btn" type="submit" data-label="{{ 'Submit test' if index + 1 == total else 'Next' }}">{{ 'Submit test' if index + 1 == total else 'Next' }}</button>
+</form>
+{% endblock %}

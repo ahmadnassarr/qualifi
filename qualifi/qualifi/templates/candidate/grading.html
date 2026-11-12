@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Grading{% endblock %}
+{% block content %}
+<meta http-equiv="refresh" content="2;url={{ url_for('candidate.result', attempt_id=attempt_id) }}">
+<div class="narrow stack center" style="padding-top: 18vh">
+  <div class="spinner"></div>
+  <p style="font-size: 18px; color: var(--text-2)" role="status">Grading your test…</p>
+  <a class="small" href="{{ url_for('candidate.result', attempt_id=attempt_id) }}">See my result now</a>
+</div>
+{% endblock %}

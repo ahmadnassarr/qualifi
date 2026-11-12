@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% from "_macros.html" import check_icon %}
+{% block title %}Your result{% endblock %}
+{% block content %}
+<div class="narrow stack center" style="padding-top: 6vh">
+  {% if attempt.passed %}
+    <div class="result-icon ok">{{ check_icon() }}</div>
+    <div class="big-num">{{ attempt.score }} / {{ attempt.total }}</div>
+    <h2>You’re qualified to apply!</h2>
+    <p class="muted">You passed {{ job.company_name }}’s test for {{ job.title }}.</p>
+    <a class="btn block" href="{{ url_for('candidate.match', job_id=job.id) }}" style="margin-top: 12px">See my match</a>
+  {% else %}
+    <div class="result-icon warn" aria-hidden="true">!</div>
+    <div class="big-num">{{ attempt.score }} / {{ attempt.total }}</div>
+    <h2>Not qualified yet</h2>
+    <p class="muted">You need {{ job.pass_mark }}/{{ job.questions_per_test }} to apply{% if topics %}. Topics to review:{% else %}.{% endif %}</p>
+    {% if topics %}<div class="chips" style="justify-content: center">{% for t in topics %}<span class="chip">{{ t }}</span>{% endfor %}</div>{% endif %}
+    <p class="accent" style="font-weight: 600">Retake unlocks on {{ retake_at|date }}</p>
+    <a class="btn block" href="{{ url_for('candidate.jobs') }}" style="margin-top: 12px">Back to jobs</a>
+  {% endif %}
+</div>
+{% endblock %}

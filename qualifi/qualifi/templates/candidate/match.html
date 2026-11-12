@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Qualifi Match{% endblock %}
+{% block content %}
+<div class="narrow stack">
+  <div class="card stack-sm">
+    <span class="label">Your Qualifi Match</span>
+    <span class="big-num accent">{{ m.score }}%</span>
+    <div class="meter" role="img" aria-label="{{ m.score }} percent match"><div style="width: {{ m.score }}%"></div></div>
+    <span class="muted small">How your skills fit {{ job.title }} at {{ job.company_name }}</span>
+  </div>
+  <div class="breakdown">
+    <div class="card"><div class="stat-num" style="font-size: 22px">{{ m.breakdown.skills }}%</div><div class="tiny muted">Skills covered (60%)</div></div>
+    <div class="card"><div class="stat-num" style="font-size: 22px">{{ m.breakdown.similarity }}%</div><div class="tiny muted">CV fits the role (25%)</div></div>
+    <div class="card"><div class="stat-num" style="font-size: 22px">{{ m.breakdown.level }}%</div><div class="tiny muted">Experience for {{ LEVELS[job.level]|lower }} (15%)</div></div>
+  </div>
+  {% if m.matched %}
+  <div class="stack-sm"><span class="label">Skills you have</span>
+    <div class="chips">{% for s in m.matched %}<span class="chip">{{ s }}</span>{% endfor %}</div></div>
+  {% endif %}
+  {% if m.missing %}
+  <div class="stack-sm"><span class="label">Missing skills</span>
+    <div class="chips">{% for s in m.missing %}<span class="chip missing">{{ s }}</span>{% endfor %}</div></div>
+  {% endif %}
+  <p class="muted small">Your match doesn’t block you. It shows what to learn next. Missing a skill you have? <a href="{{ url_for('candidate.profile') }}">Add it to your profile</a>.</p>
+  <form method="post" action="{{ url_for('candidate.apply', job_id=job.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <button class="btn block" type="submit">Send application</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Forgot password{% endblock %}
+{% block main_class %}auth-wrap{% endblock %}
+{% block content %}
+{% if sent %}
+<div class="auth-card">
+  <div class="auth-logo">Quali<span>fi</span></div>
+  <h1 style="font-size: 22px" class="center">Check your email</h1>
+  <p class="muted center">If an account exists for <strong>{{ email }}</strong>, we’ve sent a link to choose a new password.
+    It works once, for 1 hour. Check your spam folder if you don’t see it in a few minutes.</p>
+  <a class="btn block" href="{{ url_for('auth.login') }}">Back to log in</a>
+  <p class="center muted small">Didn’t get it? <a href="{{ url_for('account.forgot_password') }}">Send another link</a></p>
+</div>
+{% else %}
+<form class="auth-card" method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <div class="auth-logo">Quali<span>fi</span></div>
+  <h1 style="font-size: 22px" class="center">Forgot your password?</h1>
+  <p class="muted center" style="margin-top: -8px">Enter your account email and we’ll send you a link to choose a new one.</p>
+  <div class="field">
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email" value="{{ email }}" autocomplete="email" required autofocus>
+  </div>
+  <button class="btn block" type="submit">Send reset link</button>
+  <p class="center muted small"><a href="{{ url_for('auth.login') }}">Back to log in</a></p>
+</form>
+{% endif %}
+{% endblock %}
